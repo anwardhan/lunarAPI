@@ -2,6 +2,54 @@
 
 Phase 1 FastAPI backend for Lunar Car.
 
+## DigitalOcean App Platform
+
+If DigitalOcean says `No components detected`, the usual causes are:
+
+- you pointed App Platform at the wrong repository root
+- the app lives in a monorepo subdirectory and `source directory` is blank
+- the repo does not expose a supported detector file at the root
+
+This backend repo now includes both a root [requirements.txt](requirements.txt) and a root [Dockerfile](Dockerfile), so App Platform can detect it directly.
+
+### Recommended setup
+
+Use App Platform for the API and Managed PostgreSQL for the database.
+
+- Repository root: this repository root
+- Source directory: leave blank if you deploy this backend repo directly
+- If you deploy from the parent monorepo instead, set `source directory` to `LunarCar API`
+- Build method: Dockerfile is the most explicit option
+- HTTP port: `8080`
+- Health check path: `/readyz`
+
+### Environment variables
+
+Set these in App Platform:
+
+- `DATABASE_URL`: use an async SQLAlchemy URL such as `postgresql+asyncpg://user:password@host:25060/dbname?ssl=require`
+- `JWT_SECRET`: long random secret
+- `API_BASE_URL`: your deployed API URL, for example `https://lunar-api-abc123.ondigitalocean.app`
+- `AUTH_PROVIDER_VERIFICATION`: keep `development` for staging until real Apple/Google token verification is implemented
+- `STORAGE_BUCKET`: logical bucket name
+- `LOCAL_UPLOAD_ROOT`: optional; only used by the local upload placeholder path
+
+### Run and migrate
+
+If you use the Dockerfile deploy path, App Platform can run the API with the container `CMD`.
+
+For migrations, create a deployment job that runs:
+
+```bash
+python -m alembic upgrade head
+```
+
+### Current production gaps
+
+- Real Apple and Google token verification is not implemented yet; non-development mode currently returns `501`
+- Media uploads still use a local placeholder path and should be replaced with DigitalOcean Spaces or another S3-compatible backend before production
+- The backend expects `DATABASE_URL` to use the `postgresql+asyncpg://` scheme, not plain `postgresql://`
+
 ## Local setup
 
 ### Option A: no Docker, SQLite local dev

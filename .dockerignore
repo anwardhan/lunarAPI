@@ -1,0 +1,11 @@
+.env
+.git
+.gitignore
+.pytest_cache
+.venv
+__pycache__
+*.py[cod]
+*.egg-info
+local_uploads
+lunar_car_dev.db
+tests
