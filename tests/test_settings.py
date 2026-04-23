@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.core.config import normalize_database_url
+from app.core.config import build_database_engine_config, normalize_database_url
 
 
 def test_normalize_database_url_accepts_plain_postgresql_url() -> None:
@@ -26,3 +26,11 @@ def test_normalize_database_url_preserves_sqlite() -> None:
 def test_normalize_database_url_rejects_unresolved_placeholder() -> None:
     with pytest.raises(ValueError, match="DATABASE_URL is unresolved"):
         normalize_database_url("${postgres-db.DATABASE_URL}")
+
+
+def test_build_database_engine_config_maps_sslmode_for_asyncpg() -> None:
+    url, connect_args = build_database_engine_config(
+        "postgresql://user:pass@db.example.com:25060/lunar?sslmode=require"
+    )
+    assert url == "postgresql+asyncpg://user:pass@db.example.com:25060/lunar"
+    assert connect_args == {"ssl": "require"}

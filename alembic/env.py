@@ -8,7 +8,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.core.config import get_settings
+from app.core.config import build_database_engine_config, get_settings
 from app.models import Base
 
 config = context.config
@@ -41,11 +41,13 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     section = config.get_section(config.config_ini_section, {})
-    section["sqlalchemy.url"] = get_settings().database_url
+    database_url, connect_args = build_database_engine_config(get_settings().database_url)
+    section["sqlalchemy.url"] = database_url
     connectable = async_engine_from_config(
         section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
@@ -62,4 +64,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
