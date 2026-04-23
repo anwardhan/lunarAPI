@@ -45,6 +45,18 @@ def create_refresh_token(driver_id: str, settings: Settings | None = None) -> tu
     return token, jti
 
 
+def create_portal_session_token(settings: Settings | None = None) -> str:
+    settings = settings or get_settings()
+    now = utc_now()
+    payload: dict[str, Any] = {
+        "sub": "portal_admin",
+        "type": "portal",
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(hours=settings.portal_session_hours)).timestamp()),
+    }
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
 def decode_token(token: str, expected_type: str) -> dict[str, Any]:
     settings = get_settings()
     try:
@@ -62,3 +74,10 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any]:
         )
     return payload
 
+
+def verify_portal_password(password: str, settings: Settings | None = None) -> bool:
+    settings = settings or get_settings()
+    configured_password = settings.portal_admin_password
+    if configured_password is None:
+        return False
+    return hmac.compare_digest(password, configured_password)

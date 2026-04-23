@@ -33,6 +33,7 @@ Set these in App Platform:
 - `AUTH_PROVIDER_VERIFICATION`: keep `development` for staging until real Apple/Google token verification is implemented
 - `STORAGE_BUCKET`: logical bucket name
 - `LOCAL_UPLOAD_ROOT`: optional; only used by the local upload placeholder path
+- `PORTAL_ADMIN_PASSWORD`: password required by the built-in `/portal` admin UI
 
 ### Run and migrate
 
@@ -43,6 +44,8 @@ For migrations, create a deployment job that runs:
 ```bash
 python -m alembic upgrade head
 ```
+
+`/readyz` now checks both database connectivity and the presence of the core Phase 1 tables, so a missing migration will surface as readiness failure instead of a runtime auth error.
 
 ### Current production gaps
 
@@ -77,6 +80,31 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 Use `.venv/bin/python -m uvicorn` or activate the venv first; do not use bare `uvicorn` from pyenv Python 3.7. This project requires Python 3.11+.
 
+### Portal
+
+The backend now includes a lightweight admin portal at `/portal`.
+
+Set a password before using it:
+
+```bash
+PORTAL_ADMIN_PASSWORD=change-this-first
+```
+
+Once the API is running, open:
+
+```text
+http://localhost:8000/portal
+```
+
+The portal shows:
+
+- recent trips
+- per-trip route points
+- sticker photos
+- odometer photos
+
+It serves images from the same local upload storage used by the Phase 1 media placeholder, so local photos remain viewable until the app filesystem is replaced or the deployment is recycled.
+
 ### Option B: Postgres/PostGIS with Docker
 
 ```bash
@@ -100,6 +128,7 @@ If `docker compose` prints `command not found`, install Docker Desktop or use th
 - `AUTH_PROVIDER_VERIFICATION`: `development` accepts any non-empty provider token and creates a stable dev identity. Production must replace this with real Apple and Google token verification.
 - `LOCAL_UPLOAD_ROOT`: directory used by the local presigned-upload placeholder.
 - `STORAGE_BUCKET`: logical bucket name stored on media records.
+- `PORTAL_ADMIN_PASSWORD`: required password for the built-in `/portal` viewer.
 
 ## Implemented Phase 1 routes
 

@@ -85,6 +85,8 @@ class Settings(BaseSettings):
     auth_provider_verification: str = "development"
     local_upload_root: Path = Path("./local_uploads")
     storage_bucket: str = "lunar-car-local"
+    portal_admin_password: str | None = None
+    portal_session_hours: int = 12
 
     @field_validator("database_url", mode="before")
     @classmethod

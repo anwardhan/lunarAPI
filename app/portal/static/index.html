@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lunar Car Portal</title>
+    <link rel="stylesheet" href="/portal/assets/portal.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Lunar Car</p>
+          <h1>Trips and Photos</h1>
+        </div>
+        <button id="logoutButton" class="ghost-button hidden" type="button">Sign Out</button>
+      </header>
+
+      <main class="layout">
+        <section id="loginPanel" class="panel login-panel hidden">
+          <div class="panel-header">
+            <p class="eyebrow">Portal Access</p>
+            <h2>Sign in to view submitted trips and photos</h2>
+          </div>
+          <form id="loginForm" class="login-form">
+            <label for="passwordInput">Password</label>
+            <div class="login-row">
+              <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+              <button class="primary-button" type="submit">Enter</button>
+            </div>
+            <p id="loginError" class="error-text hidden"></p>
+          </form>
+        </section>
+
+        <section id="portalApp" class="portal-app hidden">
+          <section class="panel trips-panel">
+            <div class="panel-header">
+              <p class="eyebrow">Recent Trips</p>
+              <h2 id="tripCountLabel">0 trips</h2>
+            </div>
+            <div id="tripList" class="trip-list"></div>
+          </section>
+
+          <section class="detail-stack">
+            <section class="panel detail-panel">
+              <div id="tripDetailHeader" class="panel-header"></div>
+              <div id="tripMetrics" class="metric-grid"></div>
+              <div id="routePanel" class="route-panel"></div>
+              <div>
+                <div class="section-heading">
+                  <p class="eyebrow">Trip Photos</p>
+                  <h3>Linked submissions</h3>
+                </div>
+                <div id="tripPhotoGrid" class="photo-grid"></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="section-heading">
+                <p class="eyebrow">Recent Photos</p>
+                <h3>Latest uploads across all trips</h3>
+              </div>
+              <div id="recentPhotoGrid" class="photo-grid"></div>
+            </section>
+          </section>
+        </section>
+
+        <section id="stateMessage" class="panel state-panel hidden"></section>
+      </main>
+    </div>
+
+    <script src="/portal/assets/portal.js" defer></script>
+  </body>
+</html>

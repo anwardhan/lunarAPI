@@ -2,12 +2,21 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.api.routes import auth, drivers, media, submissions, trips
-from app.core.db import dispose_db_engine, get_session, init_db_engine
+from app.core.db import (
+    SchemaNotReadyError,
+    dispose_db_engine,
+    ensure_schema_ready,
+    get_session,
+    init_db_engine,
+)
 from app.core.logging import configure_logging
+from app.portal import STATIC_DIR as PORTAL_STATIC_DIR
+from app.portal import router as portal_router
 
 
 @asynccontextmanager
@@ -24,6 +33,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.mount("/portal/assets", StaticFiles(directory=PORTAL_STATIC_DIR), name="portal-assets")
+
 
 @app.get("/healthz")
 async def healthz() -> dict[str, str]:
@@ -34,6 +45,10 @@ async def healthz() -> dict[str, str]:
 async def readyz() -> dict[str, str]:
     async for session in get_session():
         await session.execute(text("select 1"))
+        try:
+            await ensure_schema_ready(session)
+        except SchemaNotReadyError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         break
     return {"status": "ready"}
 
@@ -42,3 +57,4 @@ for api_router in (auth.router, drivers.router, trips.router, media.router, subm
     app.include_router(api_router, prefix="/v1")
     app.include_router(api_router)
 
+app.include_router(portal_router)
